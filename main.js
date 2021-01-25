@@ -92,7 +92,6 @@ function render(){
         document.getElementById(`del-${i}`).onclick = ()=>{
             topicList = topicList.slice(0,i).concat(topicList.slice(i+1));
             render();
-            installMouseWheel();
         };
 
         document.getElementById(`up-${i}`).onclick = ()=>{
@@ -109,7 +108,6 @@ function render(){
             ];
 
             render();
-            installMouseWheel();
         };
         
         document.getElementById(`down-${i}`).onclick = ()=>{
@@ -126,14 +124,106 @@ function render(){
             ];
 
             render();
-            installMouseWheel();
         };
     });
+
+    installMouseOp();
     
 }
 
+var mouseDownPos = 0;
+var mouseDownViewStart = 0;
+var mouseDownViewEnd = 0;
+var mouseDown = false;
+function onMouseDown(e)
+{
+    mouseDownPos = getMouseRelativePos(e);
+    mouseDown = true;
+    mouseDownViewEnd = viewRangeEnd;
+    mouseDownViewStart = viewRangeStart;
+}
 
-function installMouseWheel()
+function onMouseMove(e)
+{
+    let originalRange =  (viewRangeEnd - viewRangeStart);
+
+    let mousePos = getMouseRelativePos(e);
+    console.log( mousePos *originalRange + viewRangeStart);
+
+    if (!mouseDown)
+        return;
+    
+    let delta =  - (mousePos - mouseDownPos) * originalRange;
+    viewRangeEnd = mouseDownViewEnd + delta;
+    viewRangeStart = mouseDownViewStart + delta;
+
+    render();
+}
+
+function onMouseUp(e)
+{
+    mouseDown= false;
+}
+
+function getMouseRelativePos(e)
+{
+    let mousePos = 0;
+
+    if (e.target.getAttribute('class') === "lane")
+    {
+         let rect = e.target.getBoundingClientRect();
+         let x = e.clientX - rect.left; //x position within the element.
+         //var y = e.clientY - rect.top;  //y position within the element.
+         mousePos = x/rect.width;
+         console.log(x, mousePos);
+    }
+    else if (e.target.getAttribute('class') === "line")
+    {
+        let stamp = e.target.getAttribute("stamp");
+        mousePos = (stamp-viewRangeStart)/(viewRangeEnd-viewRangeStart);
+    }
+    else{
+        console.log(e.target.className);
+    }
+
+    return mousePos;
+}
+function onMouseWheel(e)
+{
+    
+    let mousePos = getMouseRelativePos(e);
+ 
+    var delta = 0;
+
+    if (!e) 
+        e = window.event;
+    
+    e.preventDefault();
+    
+    // normalize the delta
+    if (e.wheelDelta) {
+        // IE and Opera
+        delta = e.wheelDelta / 30;
+    } 
+    else if (e.detail) { 
+        delta = -e.detail ;
+    }
+
+    console.log(delta);
+
+    let ratio  = (100+delta*2)/100;
+    let newRange = (viewRangeEnd-viewRangeStart)/ratio;
+
+    let newStart = viewRangeStart + mousePos * (viewRangeEnd - viewRangeStart) - mousePos * newRange;
+    let newEnd   = viewRangeStart + mousePos * (viewRangeEnd - viewRangeStart) + (1-mousePos) * newRange
+
+    viewRangeStart = newStart;
+    viewRangeEnd = newEnd;
+
+    render();
+}
+
+function installMouseOp()
 {
     let lanes = document.getElementsByClassName('lane');
 
@@ -141,67 +231,17 @@ function installMouseWheel()
     {
         let ele = lanes[l];
     
-       ele.onmousewheel = (e)=>{
-           console.log("scroll");
-
-           let mousePos = 0;
-
-           if (e.target.getAttribute('class') === "lane")
-           {
-                let rect = e.target.getBoundingClientRect();
-                let x = e.clientX - rect.left; //x position within the element.
-                //var y = e.clientY - rect.top;  //y position within the element.
-                mousePos = x/rect.width;
-                console.log(x, mousePos);
-           }
-           else if (e.target.getAttribute('class') === "line")
-           {
-               let stamp = e.target.getAttribute("stamp");
-               mousePos = (stamp-viewRangeStart)/(viewRangeEnd-viewRangeStart);
-           }
-           else{
-               console.log(e.target.className);
-           }
-
-        
-           var delta = 0;
-       
-           if (!e) 
-               e = window.event;
-           
-           e.preventDefault();
-           
-           // normalize the delta
-           if (e.wheelDelta) {
-               // IE and Opera
-               delta = e.wheelDelta / 30;
-           } 
-           else if (e.detail) { 
-               delta = -e.detail ;
-           }
-       
-           console.log(delta);
-
-           let ratio  = (100+delta*2)/100;
-           let newRange = (viewRangeEnd-viewRangeStart)/ratio;
-
-           let newStart = viewRangeStart + mousePos * (viewRangeEnd - viewRangeStart) - mousePos * newRange;
-           let newEnd   = viewRangeStart + mousePos * (viewRangeEnd - viewRangeStart) + (1-mousePos) * newRange
-
-           viewRangeStart = newStart;
-           viewRangeEnd = newEnd;
-
-           render();
-           installMouseWheel();
-       }
+       ele.onmousewheel = onMouseWheel;
+       ele.onmousedown = onMouseDown;
+       ele.onmouseup   = onMouseUp;
+       ele.onmousemove = onMouseMove;       
    }
 }
 
 function main()
 {
      initViewRange();
-     render();   
-     installMouseWheel();     
+     render();    
 }
 
 main();
