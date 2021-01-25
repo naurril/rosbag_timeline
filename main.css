@@ -28,6 +28,12 @@ body {
     stroke-opacity:1;
 }
 
+.mouse-navigate-line{
+    stroke: green;
+    stroke-width: 1px;
+    stroke-opacity:1;
+}
+
 .table-stamp-content{
     width: 100%;
 }

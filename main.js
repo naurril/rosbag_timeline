@@ -13,7 +13,7 @@ for (let i in originalTopics)
     })
 }
 
-
+var mouseNavLines = [];
 var viewRangeStart = 0;
 var viewRangeEnd = 100;
 
@@ -55,7 +55,7 @@ function createOneLane(div, topic){
     const svg = document. createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class","lane");
 
-    topic.forEach(m=>{
+    topic.stamps.forEach(m=>{
         let pos = translateStamp(m)*100;
 
         if (pos > 100 || pos < 0)
@@ -73,20 +73,36 @@ function createOneLane(div, topic){
         svg.appendChild(line);
     });
 
+    if (true){
+        const line = document. createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("y1", "0%");
+        line.setAttribute("x1", "0%");
+        line.setAttribute("y2", "100%");
+        line.setAttribute("x2", "0%");
+        line.setAttribute("class", "mouse-navigate-line");
+        line.setAttribute("id", topic.name);
+        svg.appendChild(line);
+        mouseNavLines.push(line);
+    }
+
     div.appendChild(svg);
 }
 
 
 function render(){
+    mouseNavLines = [];
+
+    
     let div = document.getElementById("main-view-body");
     div.innerHTML = "<tr><th>topic</th><th>lane_operations</th><th>messages</th></tr>";
 
     topicList.forEach((topic,i)=>{
         div.innerHTML += `<tr key='${i}'><td>${topic.name}</td><td><div class='lane-ops'><button id='del-${i}'>x</button><button id='up-${i}'>u</button><button  id='down-${i}'>d</button></div></td><td class='table-stamp-content' id="stamps-${i}"></td></tr>`;
         let stampDiv = document.getElementById(`stamps-${i}`)
-        createOneLane(stampDiv, topic.stamps);
+        createOneLane(stampDiv, topic);
     });
    
+    div.innerHTML += "<tr><td></td><td></td><td><span id='mouse-time'></span></td></tr>";
 
     topicList.forEach((topic,i)=>{
         document.getElementById(`del-${i}`).onclick = ()=>{
@@ -148,10 +164,23 @@ function onMouseMove(e)
     let originalRange =  (viewRangeEnd - viewRangeStart);
 
     let mousePos = getMouseRelativePos(e);
-    console.log( mousePos *originalRange + viewRangeStart);
+    document.getElementById("mouse-time").innerHTML = ( mousePos *originalRange + viewRangeStart);
 
-    if (!mouseDown)
+
+
+    if (!mouseDown){
+        let navLines = document.getElementsByClassName('mouse-navigate-line');
+        for (let i in navLines)
+        {
+            let l = navLines[i];
+            console.log(l);
+            l.setAttribute('x1', mousePos*100+"%");
+            l.setAttribute('x2', mousePos*100+"%");
+            l.setAttribute('stamp', viewRangeStart+ mousePos * originalRange)
+        }
+
         return;
+    }
     
     let delta =  - (mousePos - mouseDownPos) * originalRange;
     viewRangeEnd = mouseDownViewEnd + delta;
@@ -168,8 +197,14 @@ function onMouseUp(e)
 function getMouseRelativePos(e)
 {
     let mousePos = 0;
+    let targetClass = e.target.getAttribute('class');
 
-    if (e.target.getAttribute('class') === "lane")
+    if (targetClass === "line" || targetClass === "mouse-navigate-line")
+    {
+        let stamp = e.target.getAttribute("stamp");
+        mousePos = (stamp-viewRangeStart)/(viewRangeEnd-viewRangeStart);
+    }
+    else  //if (e.target.getAttribute('class') === "lane")
     {
          let rect = e.target.getBoundingClientRect();
          let x = e.clientX - rect.left; //x position within the element.
@@ -177,15 +212,12 @@ function getMouseRelativePos(e)
          mousePos = x/rect.width;
          console.log(x, mousePos);
     }
-    else if (e.target.getAttribute('class') === "line")
-    {
-        let stamp = e.target.getAttribute("stamp");
-        mousePos = (stamp-viewRangeStart)/(viewRangeEnd-viewRangeStart);
-    }
-    else{
-        console.log(e.target.className);
-    }
+    // else
+    // else{
+    //     console.log(e.target.className);
+    // }
 
+    console.log(mousePos);
     return mousePos;
 }
 function onMouseWheel(e)
@@ -225,8 +257,8 @@ function onMouseWheel(e)
 
 function installMouseOp()
 {
-    let lanes = document.getElementsByClassName('lane');
-
+    //let lanes = document.getElementsByClassName('lane');
+    let lanes = document.getElementsByClassName('table-stamp-content');
     for (let l in lanes)
     {
         let ele = lanes[l];
