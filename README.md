@@ -1,10 +1,12 @@
 # rosbag_timeline
 
+![screenshot](./doc/screenshot.png)
+
 ## what's new
 
 rqt_bag has the same feature but the timestamps it shows are time when the message reached to `rosbag record`, not when the message was generated.
 
-This tool shows message timestamp, with some auxiliary features you may like, such as topic list order, coloring, and so on.
+This tool shows message timestamp, with some auxiliary features you may like, such as topic ordering, coloring, and so on.
 
 
 ## How does it work
@@ -14,7 +16,7 @@ stamp_dump dumps all topics and message timestamps to a file named `data.js`. No
 `main.html` loads `data.js` and shows timelines, with some interacitve operations available.
 
 ## How to use
-### buidl stamp_dump tool
+### build stamp_dump tool
 ```
 cd tools
 catkin_make
@@ -26,3 +28,4 @@ cd ..
 
 ```
 ### open main.html with your browser (chrome recommended).
+
