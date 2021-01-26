@@ -1,6 +1,6 @@
 # rosbag_timeline
 
-![screenshot](./doc/demo.gif)
+![screenshot](./doc/sceenshot.png)
 
 ## what's new
 
