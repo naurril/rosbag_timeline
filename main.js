@@ -88,59 +88,107 @@ function createOneLane(div, topic){
     div.appendChild(svg);
 }
 
+function dragstart_handler(ev) {
+    // Add the target element's id to the data transfer object
+    ev.dataTransfer.setData("text/plain", ev.target.id);
+}
+
+function dragover_handler(ev) {
+    ev.preventDefault();
+    ev.dataTransfer.dropEffect = "move";
+}
+function drop_handler(ev) {
+    ev.preventDefault();
+    // Get the id of the target and add the moved element to the target's DOM
+    const data = ev.dataTransfer.getData("text/plain");
+    console.log(data);
+    console.log(ev.target.id);
+
+    let dragIndex = parseInt(data.split('-')[2]);
+    let dropIndex = parseInt(ev.target.id.split('-')[2]);
+
+    if (dragIndex > dropIndex)
+    {
+        topicList = [
+            ...topicList.slice(0,dropIndex),
+            topicList[dragIndex],
+            ...topicList.slice(dropIndex, dragIndex),
+            ...topicList.slice(dragIndex+1)
+        ];
+        render();
+    }
+    else if (dragIndex < dropIndex)
+    {
+        topicList = [
+            ...topicList.slice(0,dragIndex),
+            ...topicList.slice(dragIndex+1, dropIndex),
+            topicList[dragIndex],
+            ...topicList.slice(dropIndex)
+        ];
+        render();
+
+    }
+
+
+    
+}
+
+
+function randomColor()
+{
+    return '#'+Math.round(Math.random()*0xffffff).toString(16);
+}
+
+
+function refresh()
+{
+    topicList.forEach(topic=>{
+        let stampDiv = document.getElementById(`stamps-${topic.tableIndex}`);
+        stampDiv.innerHTML = "";
+        createOneLane(stampDiv, topic);
+    });
+}
+
 
 function render(){
     mouseNavLines = [];
 
     
     let div = document.getElementById("main-view-body");
-    div.innerHTML = "<tr><th>topic</th><th>lane_operations</th><th>messages</th></tr>";
+    div.innerHTML = "<tr><th>topic</th><th>operation</th><th>messages</th></tr>";
 
     topicList.forEach((topic,i)=>{
-        div.innerHTML += `<tr key='${i}'><td>${topic.name}</td><td><div class='lane-ops'><button id='del-${i}'>x</button><button id='up-${i}'>u</button><button  id='down-${i}'>d</button></div></td><td class='table-stamp-content' id="stamps-${i}"></td></tr>`;
+        div.innerHTML += `<tr key='${i}' id='tr-${i}'><td draggable='true' id='table-topic-${i}'>${topic.name}</td><td><button id='del-${i}'>x</button><button id='color-${i}'>c</button></td><td class='table-stamp-content' id="stamps-${i}"></td></tr>`;
         let stampDiv = document.getElementById(`stamps-${i}`)
         createOneLane(stampDiv, topic);
+
+        if (topic.backgroundColor)
+        {
+            document.getElementById(`tr-${i}`).style = `background-color: ${topic.backgroundColor}`;
+        }
     });
    
     div.innerHTML += "<tr><td></td><td></td><td><span id='mouse-time'></span></td></tr>";
 
     topicList.forEach((topic,i)=>{
+
+        topic.tableIndex = i;
+        let dddiv = document.getElementById(`table-topic-${i}`);
+        dddiv.ondragstart = dragstart_handler;
+        dddiv.ondragover  = dragover_handler;
+        dddiv.ondrop      = drop_handler;
+
         document.getElementById(`del-${i}`).onclick = ()=>{
             topicList = topicList.slice(0,i).concat(topicList.slice(i+1));
             render();
         };
 
-        document.getElementById(`up-${i}`).onclick = ()=>{
-            if (i=== 0)
-            {
-                return;
-            }
-
-            topicList = [
-                ...topicList.slice(0,i-1),
-                topicList[i],
-                topicList[i-1],
-                ...topicList.slice(i+1)
-            ];
-
-            render();
+        document.getElementById(`color-${i}`).onclick = ()=>{
+            let color = randomColor();
+            topic.backgroundColor = color;
+            document.getElementById(`tr-${i}`).style = `background-color: ${color}`;
         };
-        
-        document.getElementById(`down-${i}`).onclick = ()=>{
-            if (i === topicList.length-1)
-            {
-                return;
-            }
-
-            topicList = [
-                ...topicList.slice(0,i),
-                topicList[i+1],
-                topicList[i],
-                ...topicList.slice(i+2)
-            ];
-
-            render();
-        };
+      
     });
 
     installMouseOp();
@@ -186,7 +234,7 @@ function onMouseMove(e)
     viewRangeEnd = mouseDownViewEnd + delta;
     viewRangeStart = mouseDownViewStart + delta;
 
-    render();
+    refresh();
 }
 
 function onMouseUp(e)
@@ -252,7 +300,7 @@ function onMouseWheel(e)
     viewRangeStart = newStart;
     viewRangeEnd = newEnd;
 
-    render();
+    refresh();
 }
 
 function installMouseOp()
