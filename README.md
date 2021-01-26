@@ -6,7 +6,7 @@
 
 rqt_bag has the same feature but the timestamps it shows are time when the message reached to `rosbag record`, not when the message was generated.
 
-This tool shows message timestamp, with some auxiliary features you may like, such as topic ordering, coloring, and so on.
+This tool shows message timestamp, with some auxiliary features such as topic ordering, coloring, and so on.
 
 
 ## How does it work
