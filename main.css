@@ -15,6 +15,9 @@ body {
     */
 }
 
+table {
+    border-collapse: collapse;
+}
 
 .lane {
     width: 100%;

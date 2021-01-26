@@ -13,6 +13,8 @@ for (let i in originalTopics)
     })
 }
 
+topicList = topicList.sort((a,b)=> (a.name > b.name ? 1:-1));
+
 var mouseNavLines = [];
 var viewRangeStart = 0;
 var viewRangeEnd = 100;
@@ -50,7 +52,7 @@ function translateStamp(stamp){
 }
 
 
-function createOneLane(div, topic){
+function createOneLane(div, topic, createNavLine=true){
 
     const svg = document. createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class","lane");
@@ -73,7 +75,8 @@ function createOneLane(div, topic){
         svg.appendChild(line);
     });
 
-    if (true){
+    if (createNavLine){
+        console.log("create mouse nav lines");
         const line = document. createElementNS("http://www.w3.org/2000/svg", "line");
         line.setAttribute("y1", "0%");
         line.setAttribute("x1", "0%");
@@ -155,12 +158,12 @@ function render(){
 
     
     let div = document.getElementById("main-view-body");
-    div.innerHTML = "<tr><th>topic</th><th>operation</th><th>messages</th></tr>";
+    div.innerHTML = "<tr><th>operation</th><th>topic</th><th>messages</th></tr>";
 
     topicList.forEach((topic,i)=>{
-        div.innerHTML += `<tr key='${i}' id='tr-${i}'><td draggable='true' id='table-topic-${i}'>${topic.name}</td><td><button id='del-${i}'>x</button><button id='color-${i}'>c</button></td><td class='table-stamp-content' id="stamps-${i}"></td></tr>`;
+        div.innerHTML += `<tr key='${i}' id='tr-${i}'><td><button id='del-${i}'>x</button><button id='color-${i}'>c</button></td><td draggable='true' id='table-topic-${i}'>${topic.name}</td><td class='table-stamp-content' id="stamps-${i}"></td></tr>`;
         let stampDiv = document.getElementById(`stamps-${i}`)
-        createOneLane(stampDiv, topic);
+        createOneLane(stampDiv, topic, true);
 
         if (topic.backgroundColor)
         {
@@ -173,7 +176,10 @@ function render(){
     topicList.forEach((topic,i)=>{
 
         topic.tableIndex = i;
-        let dddiv = document.getElementById(`table-topic-${i}`);
+
+        document.getElementById(``)
+
+        let dddiv = document.getElementById(`table-topic-${i}`);        
         dddiv.ondragstart = dragstart_handler;
         dddiv.ondragover  = dragover_handler;
         dddiv.ondrop      = drop_handler;
@@ -189,10 +195,15 @@ function render(){
             document.getElementById(`tr-${i}`).style = `background-color: ${color}`;
         };
       
-    });
+        let stampEle = document.getElementById(`stamps-${i}`);
+        stampEle.topic = topic.name;
+        stampEle.onmousewheel = onMouseWheel;
+        stampEle.onmousedown = onMouseDown;
+        stampEle.onmouseup   = onMouseUp;
+        stampEle.onmousemove = onMouseMove;  
 
-    installMouseOp();
-    
+    });
+       
 }
 
 var mouseDownPos = 0;
@@ -218,10 +229,10 @@ function onMouseMove(e)
 
     if (!mouseDown){
         let navLines = document.getElementsByClassName('mouse-navigate-line');
-        for (let i in navLines)
+        for (let i =0; i <navLines.length; i++)
         {
-            let l = navLines[i];
-            console.log(l);
+            let l = navLines.item(i);
+            
             l.setAttribute('x1', mousePos*100+"%");
             l.setAttribute('x2', mousePos*100+"%");
             l.setAttribute('stamp', viewRangeStart+ mousePos * originalRange)
@@ -240,6 +251,14 @@ function onMouseMove(e)
 function onMouseUp(e)
 {
     mouseDown= false;
+    let mousePos = getMouseRelativePos(e);
+
+    if (mousePos === mouseDownPos)
+    {
+        //click
+        let originalRange =  (viewRangeEnd - viewRangeStart);
+        log(mousePos *originalRange + viewRangeStart, this.topic);
+    }
 }
 
 function getMouseRelativePos(e)
@@ -303,20 +322,6 @@ function onMouseWheel(e)
     refresh();
 }
 
-function installMouseOp()
-{
-    //let lanes = document.getElementsByClassName('lane');
-    let lanes = document.getElementsByClassName('table-stamp-content');
-    for (let l in lanes)
-    {
-        let ele = lanes[l];
-    
-       ele.onmousewheel = onMouseWheel;
-       ele.onmousedown = onMouseDown;
-       ele.onmouseup   = onMouseUp;
-       ele.onmousemove = onMouseMove;       
-   }
-}
 
 function main()
 {
