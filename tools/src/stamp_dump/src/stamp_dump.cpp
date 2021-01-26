@@ -90,7 +90,7 @@ int main (int argc, char** argv)
   }
 
   // write json
-  std::ofstream of("./stamps.js");
+  std::ofstream of("./data.js");
 
   of << "var topics = {";
 
