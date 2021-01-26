@@ -65,9 +65,9 @@ function createOneLane(div, topic){
 
         const line = document. createElementNS("http://www.w3.org/2000/svg", "line");
         line.setAttribute("y1", "0%");
-        line.setAttribute("x1", translateStamp(m)*100 +"%");
+        line.setAttribute("x1", pos +"%");
         line.setAttribute("y2", "100%");
-        line.setAttribute("x2", translateStamp(m)*100 +"%");
+        line.setAttribute("x2", pos +"%");
         line.setAttribute("stamp", m);
         line.setAttribute("class", "line");
         svg.appendChild(line);
