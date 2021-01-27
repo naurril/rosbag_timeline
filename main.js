@@ -2,16 +2,12 @@
 
 
 
-let originalTopics = topics;
 
-let topicList = [];
-for (let i in originalTopics)
-{
-    topicList.push({
-        name: i,
-        stamps: originalTopics[i],
-    })
-}
+
+
+let originalTopics = data.topics;
+
+let topicList = data.topics;
 
 topicList = topicList.sort((a,b)=> (a.name > b.name ? 1:-1));
 
@@ -224,7 +220,7 @@ function onMouseMove(e)
 
     let mousePos = getMouseRelativePos(e);
     document.getElementById("mouse-time").innerHTML = ( mousePos *originalRange + viewRangeStart);
-
+    document.getElementById("mouse-time").style = "left:"+mousePos*100+"%";
 
 
     if (!mouseDown){
@@ -325,6 +321,7 @@ function onMouseWheel(e)
 
 function main()
 {
+     document.getElementById("filename").innerHTML = data.file;
      initViewRange();
      render();    
 }

@@ -55,3 +55,7 @@ tr,td,svg {
 .lane-op{
     align:left;
 }
+
+#mouse-time{
+    position: relative;
+}

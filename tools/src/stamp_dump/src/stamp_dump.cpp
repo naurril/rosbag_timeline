@@ -54,6 +54,7 @@ int main (int argc, char** argv)
   for (auto topic: topics)
   {
     stamp_cache[topic] = StampList();
+    stamp_cache[topic+"_bag"] = StampList();  //timestamp of rosbag
   }
 
   view_it = view.begin ();
@@ -64,6 +65,8 @@ int main (int argc, char** argv)
     auto topic =  view_it->getTopic();
     //std::cout<<topic<<std::endl;
     //std::cout<<"timestame in view "<<view_it->getTime()<<std::endl;
+
+    stamp_cache[topic+"_bag"].push_back(view_it->getTime());
 
     sensor_msgs::CompressedImageConstPtr img_compressed = view_it->instantiate<sensor_msgs::CompressedImage> ();
     if (img_compressed != NULL){
@@ -82,6 +85,7 @@ int main (int argc, char** argv)
     if (cloud != NULL)
     {
       stamp_cache[topic].push_back(cloud->header.stamp);
+
       //std::cout<<"timestame in pack " << cloud->header.stamp<<std::endl;
     }
    
@@ -92,20 +96,24 @@ int main (int argc, char** argv)
   // write json
   std::ofstream of("./data.js");
 
-  of << "var topics = {";
+  of << "var data = {";
+  of << "exe:"  <<"'" << argv[0] <<"',";
+  of << "file:" <<"'" << argv[1] <<"',";
 
-  for (auto topic: topics)
+  of << "topics: [";
+
+  for (const auto& [topic, stamps] : stamp_cache) 
   {
-    auto stamps = stamp_cache[topic];
+    of << "{name:"<<"\"" << topic << "\",";
 
-    of << "\"" << topic << "\":" << "[";
+    of << "stamps:" << "[";
     for (auto st: stamps){
       of << st <<',';
     }
-    of << "],";
+    of << "]},";
   }
 
-  of <<"};";
+  of <<"]};";
 
   of.close();
 
