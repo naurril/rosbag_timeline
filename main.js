@@ -7,7 +7,18 @@
 
 let originalTopics = data.topics;
 
-let topicList = data.topics;
+let topicList = [];
+
+data.topics.forEach(topic=>{
+    topicList.push({
+        name:topic.name,
+        stamps: topic.stamps.filter((v,i)=>i%2===0)});
+    topicList.push({
+        name:topic.name+"_bag",
+        stamps: topic.stamps.filter((v,i)=>i%2===1)});
+});
+
+
 
 topicList = topicList.sort((a,b)=> (a.name > b.name ? 1:-1));
 
@@ -47,13 +58,19 @@ function translateStamp(stamp){
     return (stamp - viewRangeStart)/(viewRangeEnd-viewRangeStart);
 }
 
+function indexToColor(i)
+{
+
+}
 
 function createOneLane(div, topic, createNavLine=true){
 
     const svg = document. createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class","lane");
 
-    topic.stamps.forEach(m=>{
+    topic.stamps.forEach((m,i)=>{
+        
+        
         let pos = translateStamp(m)*100;
 
         if (pos > 100 || pos < 0)
@@ -67,7 +84,9 @@ function createOneLane(div, topic, createNavLine=true){
         line.setAttribute("y2", "100%");
         line.setAttribute("x2", pos +"%");
         line.setAttribute("stamp", m);
-        line.setAttribute("class", "line");
+        line.setAttribute("class", "line line-"+i%5 );
+
+
         svg.appendChild(line);
     });
 
@@ -271,7 +290,7 @@ function getMouseRelativePos(e)
     let mousePos = 0;
     let targetClass = e.target.getAttribute('class');
 
-    if (targetClass === "line" || targetClass === "mouse-navigate-line")
+    if (targetClass.search("line") >= 0 || targetClass === "mouse-navigate-line")
     {
         let stamp = e.target.getAttribute("stamp");
         mousePos = (stamp-viewRangeStart)/(viewRangeEnd-viewRangeStart);
@@ -296,6 +315,8 @@ function onMouseWheel(e)
 {
     
     let mousePos = getMouseRelativePos(e);
+
+    if (mousePos< 0 || mousePos > 1)
  
     var delta = 0;
 

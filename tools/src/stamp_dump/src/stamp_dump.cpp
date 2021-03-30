@@ -53,8 +53,7 @@ int main (int argc, char** argv)
 
   for (auto topic: topics)
   {
-    stamp_cache[topic] = StampList();
-    stamp_cache[topic+"_bag"] = StampList();  //timestamp of rosbag
+    stamp_cache[topic] = StampList();    
   }
 
   view_it = view.begin ();
@@ -66,11 +65,13 @@ int main (int argc, char** argv)
     //std::cout<<topic<<std::endl;
     //std::cout<<"timestame in view "<<view_it->getTime()<<std::endl;
 
-    stamp_cache[topic+"_bag"].push_back(view_it->getTime());
+    //stamp_cache[topic+"_bag"].push_back(view_it->getTime());
 
     sensor_msgs::CompressedImageConstPtr img_compressed = view_it->instantiate<sensor_msgs::CompressedImage> ();
     if (img_compressed != NULL){
        stamp_cache[topic].push_back(img_compressed->header.stamp);
+       stamp_cache[topic].push_back(view_it->getTime());
+       
        //std::cout<<"timestame in pack "<<img_compressed->header.stamp<<std::endl;
     }
 
@@ -78,6 +79,7 @@ int main (int argc, char** argv)
     if (img != NULL)
     {
       stamp_cache[topic].push_back(img->header.stamp);
+      stamp_cache[topic].push_back(view_it->getTime());
       //std::cout<<"timestame in pack "<<img->header.stamp<<std::endl;
     }
     
@@ -85,7 +87,7 @@ int main (int argc, char** argv)
     if (cloud != NULL)
     {
       stamp_cache[topic].push_back(cloud->header.stamp);
-
+      stamp_cache[topic].push_back(view_it->getTime());
       //std::cout<<"timestame in pack " << cloud->header.stamp<<std::endl;
     }
    

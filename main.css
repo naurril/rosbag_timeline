@@ -30,10 +30,32 @@ table {
 }
 
 .line {
-    /*stroke-dasharray: 3,3;*/
-    stroke: red;
     stroke-width: 1px;
     stroke-opacity:1;
+}
+
+.dash-line {
+    stroke-dasharray: 5,3;
+}
+
+.line-0 {
+    stroke: red;
+}
+
+.line-1 {
+    stroke: rgb(93, 230, 93);
+}
+
+.line-2 {
+    stroke: rgb(80, 88, 204);
+}
+
+.line-3 {
+    stroke: rgb(126, 101, 20);
+}
+
+.line-4 {
+    stroke: rgb(170, 23, 158);
 }
 
 .mouse-navigate-line{
