@@ -157,14 +157,17 @@ function render(){
     div.innerHTML = "<tr><th>operation</th><th>topic</th><th>messages</th></tr>";
 
     topicList.forEach((topic,i)=>{
-        div.innerHTML += `<tr key='${i}' id='tr-${i}'><td><button id='del-${i}'>x</button><button id='color-${i}'>c</button></td><td draggable='true' id='table-topic-${i}'>${topic.name}</td><td class='table-stamp-content' id="stamps-${i}"></td></tr>`;
+        if (!topic.backgroundColor)
+        {
+            topic.backgroundColor = '#ffffff';
+        }
+
+        div.innerHTML += `<tr key='${i}' id='tr-${i}'><td><button id='del-${i}'>x</button><input type='color' value='${topic.backgroundColor}' id='color-${i}'></td><td draggable='true' id='table-topic-${i}'>${topic.name}</td><td class='table-stamp-content' id="stamps-${i}"></td></tr>`;
         let stampDiv = document.getElementById(`stamps-${i}`)
         createOneLane(stampDiv, topic, true);
 
-        if (topic.backgroundColor)
-        {
-            document.getElementById(`tr-${i}`).style = `background-color: ${topic.backgroundColor}`;
-        }
+        document.getElementById(`tr-${i}`).style = `background-color: ${topic.backgroundColor}`;
+        
     });
    
     div.innerHTML += "<tr><td></td><td></td><td><span id='mouse-time'></span></td></tr>";
@@ -185,8 +188,14 @@ function render(){
             render();
         };
 
-        document.getElementById(`color-${i}`).onclick = ()=>{
-            let color = randomColor();
+        document.getElementById(`color-${i}`).onchange = (e)=>{
+            let color = e.target.value;
+            topic.backgroundColor = color;
+            document.getElementById(`tr-${i}`).style = `background-color: ${color}`;
+        };
+
+        document.getElementById(`color-${i}`).oninput = (e)=>{
+            let color = e.target.value;
             topic.backgroundColor = color;
             document.getElementById(`tr-${i}`).style = `background-color: ${color}`;
         };

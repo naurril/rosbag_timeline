@@ -96,24 +96,34 @@ int main (int argc, char** argv)
   // write json
   std::ofstream of("./data.js");
 
-  of << "var data = {";
-  of << "exe:"  <<"'" << argv[0] <<"',";
-  of << "file:" <<"'" << argv[1] <<"',";
+  of << "var data = ";
+  of << std::endl << "{";
+  of << std::endl << "\"exe\":"  <<"\"" << argv[0] <<"\",";
+  of << std::endl << "\"file\":" <<"\"" << argv[1] <<"\",";
 
-  of << "topics: [";
+  of << std::endl << "\"topics\": [";
 
-  for (const auto& [topic, stamps] : stamp_cache) 
+  for (auto& [topic, stamps] : stamp_cache) 
   {
-    of << "{name:"<<"\"" << topic << "\",";
-
-    of << "stamps:" << "[";
+    of << std::endl << "{\"name\":"<<"\"" << topic << "\",";
+    of << std::endl << "\"stamps\":" << "[";
     for (auto st: stamps){
-      of << st <<',';
+      of << st << ",";
     }
+
+    // remove last ','
+    long pos = of.tellp();
+    of.seekp (pos-1);
+
     of << "]},";
   }
 
-  of <<"]};";
+  // remove last ','
+  long pos = of.tellp();
+  of.seekp (pos-1);
+
+  of <<"]"<<std::endl;
+  of <<"}"<<std::endl;
 
   of.close();
 
