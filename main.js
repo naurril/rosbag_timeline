@@ -7,17 +7,10 @@
 
 let originalTopics = data.topics;
 
-let topicList = [];
+if (data_indexed.topics)
+    originalTopics = data_indexed.topics
 
-data.topics.forEach(topic=>{
-    topicList.push({
-        name:topic.name,
-        stamps: topic.stamps.filter((v,i)=>i%2===0)});
-    topicList.push({
-        name:topic.name+"_bag",
-        stamps: topic.stamps.filter((v,i)=>i%2===1)});
-});
-
+let topicList = originalTopics;
 
 
 topicList = topicList.sort((a,b)=> (a.name > b.name ? 1:-1));
@@ -70,7 +63,9 @@ function createOneLane(div, topic, createNavLine=true){
 
     topic.stamps.forEach((m,i)=>{
         
-        
+        if (topic.index)
+            i = topic.index[i]
+
         let pos = translateStamp(m)*100;
 
         if (pos > 100 || pos < 0)
@@ -85,6 +80,7 @@ function createOneLane(div, topic, createNavLine=true){
         line.setAttribute("x2", pos +"%");
         line.setAttribute("stamp", m);
         line.setAttribute("class", "line line-"+i%5 );
+        line.setAttribute("title", i);
 
 
         svg.appendChild(line);
@@ -236,7 +232,7 @@ var mouseDownViewEnd = 0;
 var mouseDown = false;
 function onMouseDown(e)
 {
-    mouseDownPos = getMouseRelativePos(e);
+    mouseDownPos = getMouseRelativePos(e)[0];
     mouseDown = true;
     mouseDownViewEnd = viewRangeEnd;
     mouseDownViewStart = viewRangeStart;
@@ -246,8 +242,8 @@ function onMouseMove(e)
 {
     let originalRange =  (viewRangeEnd - viewRangeStart);
 
-    let mousePos = getMouseRelativePos(e);
-    document.getElementById("mouse-time").innerHTML = ( mousePos *originalRange + viewRangeStart);
+    let [mousePos,title] = getMouseRelativePos(e);
+    document.getElementById("mouse-time").innerHTML = ( mousePos *originalRange + viewRangeStart) + ": " + title;
     document.getElementById("mouse-time").style = "left:"+mousePos*100+"%";
 
 
@@ -275,7 +271,7 @@ function onMouseMove(e)
 function onMouseUp(e)
 {
     mouseDown= false;
-    let mousePos = getMouseRelativePos(e);
+    let [mousePos,title] = getMouseRelativePos(e);
 
     if (mousePos === mouseDownPos)
     {
@@ -289,11 +285,13 @@ function getMouseRelativePos(e)
 {
     let mousePos = 0;
     let targetClass = e.target.getAttribute('class');
+    let title = "";
 
     if (targetClass.search("line") >= 0 || targetClass === "mouse-navigate-line")
     {
         let stamp = e.target.getAttribute("stamp");
         mousePos = (stamp-viewRangeStart)/(viewRangeEnd-viewRangeStart);
+        title = e.target.getAttribute("title");
     }
     else  //if (e.target.getAttribute('class') === "lane")
     {
@@ -308,13 +306,13 @@ function getMouseRelativePos(e)
     //     console.log(e.target.className);
     // }
 
-    console.log(mousePos);
-    return mousePos;
+    console.log(mousePos, title);
+    return [mousePos, title];
 }
 function onMouseWheel(e)
 {
     
-    let mousePos = getMouseRelativePos(e);
+    let [mousePos,title] = getMouseRelativePos(e);
 
     if (mousePos< 0 || mousePos > 1)
  
